@@ -1,0 +1,42 @@
+<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Dog Profile</title><style>
+:root{--g:#15803d;--gd:#166534;--bg:#f0fdf4;--card:#fff;--tx:#14532d;--mu:#4b5563;--bd:#d1e7d9}
+*{box-sizing:border-box}body{margin:0;font-family:system-ui,Segoe UI,sans-serif;background:var(--bg);color:var(--tx)}
+.top{background:var(--g);color:#fff;padding:14px 20px;display:flex;justify-content:space-between;align-items:center;font-weight:600}
+.top a{color:#fff;font-size:14px}.wrap{max-width:640px;margin:20px auto;padding:0 14px}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:18px;margin-bottom:16px;box-shadow:0 1px 3px #0001}
+h1,h2,h3{margin:0 0 12px}label{display:block;font-size:13px;color:var(--mu);margin-top:10px}
+input,select{width:100%;padding:10px;border:1px solid var(--bd);border-radius:8px;font-size:15px;margin-top:4px}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+button,.btn{background:var(--g);color:#fff;border:0;border-radius:10px;padding:12px;font-size:16px;width:100%;margin-top:16px;cursor:pointer}
+button:hover{background:var(--gd)}</style>
+<style>.hero{width:100%;height:260px;object-fit:cover;border-radius:12px;background:#dcfce7;display:flex;align-items:center;justify-content:center;font-size:80px}
+.badge{padding:14px;border-radius:12px;color:#fff;font-weight:700;margin:14px 0}
+.ok{background:#15803d}.warn{background:#b45309}.bad{background:#b91c1c}
+.chips span{display:inline-block;background:#dcfce7;border-radius:20px;padding:4px 12px;margin:2px 4px 2px 0;font-size:14px}
+table{width:100%;border-collapse:collapse}td,th{text-align:left;padding:8px 4px;border-bottom:1px solid var(--bd);font-size:14px}</style></head><body>
+<div class="top"><span>🐾 Stray Dog Health Card</span></div>
+<div class="wrap"><div class="card" id="c"><p>Loading…</p></div></div>
+<script>
+const id=location.pathname.split('/').pop(), c=document.getElementById('c');
+function el(t,txt,cls){const e=document.createElement(t);if(txt!==undefined)e.textContent=txt;if(cls)e.className=cls;return e}
+fetch('/public/dogs/'+id).then(r=>{if(!r.ok)throw 0;return r.json()}).then(d=>{
+ c.textContent='';
+ if(d.hasPhoto){const i=el('img');i.src='/photos/'+d.dogId+'?t='+Date.now();i.className='hero';c.append(i)}
+ else c.append(el('div','🐕','hero'));
+ c.append(el('h1',(d.name||'Dog')+'  #'+d.dogId));
+ const chips=el('div','','chips');
+ [d.sex==='F'?'Female':'Male', d.ageMonths!=null?d.ageMonths+' months':null, d.area, d.colorMarkings,
+  d.sterilized?'Sterilized'+(d.sterilizedOn?' ('+d.sterilizedOn+')':''):'Not sterilized'].filter(Boolean).forEach(t=>chips.append(el('span',t)));
+ c.append(chips);
+ const r=d.vaccinations.find(v=>v.vaccineType==='RABIES'); let msg,cls;
+ if(!r){msg='No rabies vaccination on record';cls='warn'}
+ else if(r.nextDue&&new Date(r.nextDue)<new Date()){msg='Rabies vaccine OVERDUE (was due '+r.nextDue+')';cls='bad'}
+ else{msg='Rabies vaccinated on '+r.givenOn+(r.nextDue?' • next due '+r.nextDue:'');cls='ok'}
+ c.append(el('div',msg,'badge '+cls));
+ c.append(el('h3','Vaccination history'));
+ const t=el('table'),h=el('tr');['Vaccine','Given','Next due'].forEach(x=>h.append(el('th',x)));t.append(h);
+ d.vaccinations.forEach(v=>{const tr=el('tr');[v.vaccineType,v.givenOn,v.nextDue||'-'].forEach(x=>tr.append(el('td',x)));t.append(tr)});
+ c.append(t);
+}).catch(()=>{c.textContent='';c.append(el('h2','Dog not found'),el('p','Check the ID printed on the tag.'))});
+</script></body></html>

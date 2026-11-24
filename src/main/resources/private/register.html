@@ -1,0 +1,62 @@
+<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Register Dog</title><style>
+:root{--g:#15803d;--gd:#166534;--bg:#f0fdf4;--card:#fff;--tx:#14532d;--mu:#4b5563;--bd:#d1e7d9}
+*{box-sizing:border-box}body{margin:0;font-family:system-ui,Segoe UI,sans-serif;background:var(--bg);color:var(--tx)}
+.top{background:var(--g);color:#fff;padding:14px 20px;display:flex;justify-content:space-between;align-items:center;font-weight:600}
+.top a{color:#fff;font-size:14px}.wrap{max-width:640px;margin:20px auto;padding:0 14px}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:18px;margin-bottom:16px;box-shadow:0 1px 3px #0001}
+h1,h2,h3{margin:0 0 12px}label{display:block;font-size:13px;color:var(--mu);margin-top:10px}
+input,select{width:100%;padding:10px;border:1px solid var(--bd);border-radius:8px;font-size:15px;margin-top:4px}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+button,.btn{background:var(--g);color:#fff;border:0;border-radius:10px;padding:12px;font-size:16px;width:100%;margin-top:16px;cursor:pointer}
+button:hover{background:var(--gd)}</style></head><body>
+<div class="top"><span>🐾 Register a dog</span><a href="/logout">Log out</a></div>
+<div class="wrap">
+<form id="f" class="card">
+ <h2>Dog details</h2>
+ <label>Photo<input type="file" id="photo" accept="image/*"></label>
+ <img id="prev" style="display:none;width:100%;max-height:240px;object-fit:cover;border-radius:10px;margin-top:8px">
+ <div class="row"><label>Name (optional)<input id="name"></label>
+  <label>Sex<select id="sex"><option value="M">Male</option><option value="F">Female</option></select></label></div>
+ <div class="row"><label>Approx. age (months)<input id="age" type="number" min="0"></label>
+  <label>Area<input id="area"></label></div>
+ <label>Colour / markings<input id="marks"></label>
+ <div class="row"><label>Sterilized?<select id="ster"><option value="0">No</option><option value="1">Yes</option></select></label>
+  <label>Sterilized on<input id="sterOn" type="date"></label></div>
+ <label>Caretaker phone (private)<input id="phone"></label>
+ <h3 style="margin-top:20px">First vaccination (optional)</h3>
+ <div class="row"><label>Vaccine<select id="vtype"><option>RABIES</option><option>DHPP</option><option>OTHER</option></select></label>
+  <label>Batch no.<input id="batch"></label></div>
+ <div class="row"><label>Given on<input id="given" type="date"></label>
+  <label>Next due<input id="due" type="date"></label></div>
+ <button>Register dog &amp; create QR</button>
+</form>
+<div id="out" class="card" style="display:none;text-align:center">
+ <h2>Registered! ID: <span id="oid"></span></h2><img id="oph" style="max-width:100%;max-height:200px;border-radius:10px;display:none">
+ <div><img id="oqr" style="width:220px"></div>
+ <a id="olink" target="_blank"></a>
+ <button type="button" onclick="window.print()">Print QR</button>
+ <button type="button" style="background:#fff;color:var(--g);border:1px solid var(--g)" onclick="location.reload()">Register another</button>
+</div>
+<div id="msg" style="color:#b91c1c"></div></div>
+<script>
+const $=i=>document.getElementById(i), J={'Content-Type':'application/json'};
+$('photo').onchange=e=>{const f=e.target.files[0];if(f){$('prev').src=URL.createObjectURL(f);$('prev').style.display='block'}};
+$('f').onsubmit=async e=>{e.preventDefault();$('msg').textContent='';
+ try{
+  let r=await fetch('/api/dogs',{method:'POST',headers:J,body:JSON.stringify({name:$('name').value,sex:$('sex').value,
+   ageMonths:+$('age').value||null,colorMarkings:$('marks').value,area:$('area').value,sterilized:$('ster').value==='1',
+   sterilizedOn:$('sterOn').value||null,caretakerPhone:$('phone').value})});
+  if(r.status===401){location='/';return}
+  if(!r.ok)throw new Error(await r.text());
+  const d=await r.json(),id=d.dogId;
+  const ph=$('photo').files[0];
+  if(ph){const fd=new FormData();fd.append('photo',ph);const pr=await fetch('/api/dogs/'+id+'/photo',{method:'POST',body:fd});
+   if(!pr.ok)$('msg').textContent='Dog saved, but photo failed: '+await pr.text()}
+  if($('given').value){await fetch('/api/dogs/'+id+'/vaccinations',{method:'POST',headers:J,body:JSON.stringify({
+   vaccineType:$('vtype').value,givenOn:$('given').value,nextDue:$('due').value||null,batchNo:$('batch').value})})}
+  $('f').style.display='none';$('out').style.display='block';$('oid').textContent=id;
+  $('oqr').src='/api/dogs/'+id+'/qr';$('olink').href=d.publicUrl;$('olink').textContent=d.publicUrl;
+  if(ph){$('oph').src='/photos/'+id;$('oph').style.display='inline'}
+ }catch(err){$('msg').textContent='Error: '+err.message}};
+</script></body></html>

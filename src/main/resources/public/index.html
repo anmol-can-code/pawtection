@@ -1,0 +1,25 @@
+<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Stray Dog Tracker - Login</title><style>
+:root{--g:#15803d;--gd:#166534;--bg:#f0fdf4;--card:#fff;--tx:#14532d;--mu:#4b5563;--bd:#d1e7d9}
+*{box-sizing:border-box}body{margin:0;font-family:system-ui,Segoe UI,sans-serif;background:var(--bg);color:var(--tx)}
+.top{background:var(--g);color:#fff;padding:14px 20px;display:flex;justify-content:space-between;align-items:center;font-weight:600}
+.top a{color:#fff;font-size:14px}.wrap{max-width:640px;margin:20px auto;padding:0 14px}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:18px;margin-bottom:16px;box-shadow:0 1px 3px #0001}
+h1,h2,h3{margin:0 0 12px}label{display:block;font-size:13px;color:var(--mu);margin-top:10px}
+input,select{width:100%;padding:10px;border:1px solid var(--bd);border-radius:8px;font-size:15px;margin-top:4px}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+button,.btn{background:var(--g);color:#fff;border:0;border-radius:10px;padding:12px;font-size:16px;width:100%;margin-top:16px;cursor:pointer}
+button:hover{background:var(--gd)}</style></head><body>
+<div class="wrap" style="max-width:380px;margin-top:12vh">
+ <div class="card" style="text-align:center">
+  <div style="font-size:52px">🐾</div>
+  <h1>Stray Dog Tracker</h1><p style="color:var(--mu);margin-top:0">Vet &amp; admin login</p>
+  <p id="err" style="color:#b91c1c;display:none">Invalid username or password.</p>
+  <form method="post" action="/login" style="text-align:left">
+   <label>Username<input name="username" required autofocus></label>
+   <label>Password<input name="password" type="password" required></label>
+   <button>Log in</button>
+  </form>
+ </div></div>
+<script>if(location.search.includes('error'))document.getElementById('err').style.display='block'</script>
+</body></html>
